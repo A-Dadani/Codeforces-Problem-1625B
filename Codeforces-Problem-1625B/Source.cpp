@@ -21,17 +21,20 @@ std::vector<unsigned int> GetAllIndecies(std::vector<T> input, Functor lambda)
 }
 
 template<typename T>
-std::vector<std::pair<T, T>> GetAllPairs(std::vector<T> input)
+std::pair<T, T> GetBestPair(std::vector<T> indecies)
 {
-	std::vector<std::pair<T, T>> result;
-	for (unsigned int i = 0; i < input.size() - 1; ++i)
+	std::pair<unsigned int, T> minIndexDiff(0, 0);
+	for (unsigned int i = 0; i < indecies.size() - 1; ++i)
 	{
-		for (unsigned int j = i + 1; j < input.size(); ++j)
+		T diff = indecies[i + 1] - indecies[i];
+		if (diff == 1) return std::pair<T, T>(indecies[i], indecies[i + 1]);
+		if (minIndexDiff.second > diff)
 		{
-			result.emplace_back(input[i], input[j]);
+			minIndexDiff.second = diff;
+			minIndexDiff.first = i;
 		}
 	}
-	return result;
+	return std::pair<T, T>(indecies[minIndexDiff.first], indecies[minIndexDiff.first + 1]);
 }
 
 int main()
@@ -41,6 +44,8 @@ int main()
 	std::cin >> nCases;
 	for (unsigned short int i = 0; i < nCases; ++i)
 	{
+		//unsigned int arrSize = 150000;
+		//std::vector<unsigned int> inputArr(150000, 69);
 		unsigned int arrSize;
 		std::vector<unsigned int> inputArr;
 		std::cin >> arrSize;
@@ -62,13 +67,11 @@ int main()
 			auto allOccurenceIndecies = GetAllIndecies(inputArr, [j, &inputArr](unsigned int i) { return inputArr[j] == i; }); //Capturing by reference without consting is dangerous but i'm lazy
 			for (const auto& e : allOccurenceIndecies) shouldBeChecked[e] = false;
 			if (allOccurenceIndecies.size() < 2) continue; //Skip if no pairs can be formed
-			for (const auto& currPair : GetAllPairs(allOccurenceIndecies))
-			{
-				currMaxPossibleLength = std::max(currMaxPossibleLength, std::min(currPair.first, currPair.second) + arrSize - std::max(currPair.first, currPair.second));
-			}
+			std::pair<unsigned int, unsigned int> bestPair = GetBestPair(allOccurenceIndecies); //We get the best pair for the current number
+			currMaxPossibleLength = std::max(currMaxPossibleLength, std::min(bestPair.first, bestPair.second) + arrSize - std::max(bestPair.first, bestPair.second));
 		}
 		//Finished Processing
-
+		
 		//Printing Results
 		std::cout << (currMaxPossibleLength == 0 ? "-1" : std::to_string(currMaxPossibleLength)) << std::endl;
 		//Finished Printing
