@@ -9,6 +9,19 @@
 #include <algorithm>
 #include <string>
 
+struct Element
+{
+	Element() = default;
+	Element(unsigned int val, unsigned int firstOccurence)
+		:
+		val(val)
+	{
+		allOccurences.emplace_back(firstOccurence);
+	}
+	unsigned int val;
+	std::vector<unsigned int> allOccurences;
+};
+
 template<typename T, typename Functor>
 std::vector<unsigned int> GetAllIndecies(std::vector<T> input, Functor lambda)
 {
@@ -44,30 +57,42 @@ int main()
 	std::cin >> nCases;
 	for (unsigned short int i = 0; i < nCases; ++i)
 	{
-		//unsigned int arrSize = 150000;
-		//std::vector<unsigned int> inputArr(150000, 69);
-		unsigned int arrSize;
+		unsigned int arrSize = 150000; //DEBUG
 		std::vector<unsigned int> inputArr;
-		std::cin >> arrSize;
 		inputArr.reserve(arrSize);
-		for (unsigned int j = 0; j < arrSize; ++j)
+		for (unsigned int d = 0; d < 150000; ++d)
 		{
-			unsigned int temp;
-			std::cin >> temp;
-			inputArr.emplace_back(temp);
+			inputArr.emplace_back(d);
 		}
+		//std::vector<unsigned int> inputArr(150000, 69);
+		//unsigned int arrSize;
+		//std::vector<unsigned int> inputArr;
+		//std::cin >> arrSize;
+		//inputArr.reserve(arrSize);
+		//for (unsigned int j = 0; j < arrSize; ++j)
+		//{
+		//	unsigned int temp;
+		//	std::cin >> temp;
+		//	inputArr.emplace_back(temp);
+		//}
 		//Capture Finished
 
 		//Processing Data
-		std::vector<bool> shouldBeChecked(arrSize, true);
+		std::vector<Element> elements;
 		unsigned int currMaxPossibleLength = 0; //If no pair of arrays exists this variable is going to store 0 which we'll substitute with a -1 for print later
 		for (unsigned int j = 0; j < arrSize; ++j)
 		{
-			if (!shouldBeChecked[j]) continue; //So we don't double check stuff which would be a waste of time and memory
-			auto allOccurenceIndecies = GetAllIndecies(inputArr, [j, &inputArr](unsigned int i) { return inputArr[j] == i; }); //Capturing by reference without consting is dangerous but i'm lazy
-			for (const auto& e : allOccurenceIndecies) shouldBeChecked[e] = false;
-			if (allOccurenceIndecies.size() < 2) continue; //Skip if no pairs can be formed
-			std::pair<unsigned int, unsigned int> bestPair = GetBestPair(allOccurenceIndecies); //We get the best pair for the current number
+			auto firstOcc = std::find_if(elements.begin(), elements.end(), [&inputArr, j](Element e) { return (e.val == inputArr[j]); });
+			if (firstOcc == elements.end()) elements.emplace_back(inputArr[j], j);
+			else
+			{
+				firstOcc->allOccurences.emplace_back(j);
+			}
+		}
+		for (const auto& e : elements)
+		{
+			if (e.allOccurences.size() < 2) continue; //Skip if no pairs can be formed
+			std::pair<unsigned int, unsigned int> bestPair = GetBestPair(e.allOccurences); //We get the best pair for the current number
 			currMaxPossibleLength = std::max(currMaxPossibleLength, std::min(bestPair.first, bestPair.second) + arrSize - std::max(bestPair.first, bestPair.second));
 		}
 		//Finished Processing
