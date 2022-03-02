@@ -28,7 +28,7 @@ int main()
 		//Capture Finished
 
 		//Processing Data
-		std::vector<int> lastIndex(150000, -1);
+		std::vector<int> lastIndex(150001, -1);
 		unsigned int bestDist = 0;
 		for (unsigned int i = 0; i < arrSize; ++i)
 		{
